@@ -1,0 +1,12 @@
+package com.moodsound.backend.repository;
+
+import com.moodsound.backend.model.Track;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+import java.util.Optional;
+
+@Repository
+public interface TrackRepository extends JpaRepository<Track, Integer> {
+    Optional<Track> findBySpotifyId(String spotifyId);
+    boolean existsBySpotifyId(String spotifyId);
+}
