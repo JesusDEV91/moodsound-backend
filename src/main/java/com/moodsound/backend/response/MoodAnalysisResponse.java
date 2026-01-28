@@ -8,11 +8,9 @@ public class MoodAnalysisResponse {
     private String emoji;
     private String message;
 
-    // Constructor vacío
     public MoodAnalysisResponse() {
     }
 
-    // Getters y Setters
     public boolean isDetected() {
         return detected;
     }

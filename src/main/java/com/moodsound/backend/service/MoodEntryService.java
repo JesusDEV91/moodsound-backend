@@ -22,28 +22,21 @@ public class MoodEntryService {
     @Autowired
     private MoodRepository moodRepository;
 
-
     public List<MoodEntry> getHistoryByUserId(Integer userId) {
         return moodEntryRepository.findByUserIdOrderByCreatedAtDesc(userId);
     }
 
-
-    public MoodEntry saveMoodEntry(Integer userId, Integer moodId, String inputText, String detectedBy) {
-        // Buscar usuario y mood
+    public void saveMoodEntry(Integer userId, Integer moodId, String inputText, String detectedBy) {
         User user = userRepository.findById(userId).orElse(null);
         Mood mood = moodRepository.findById(moodId).orElse(null);
 
-        if (user == null || mood == null) {
-            return null; // No se pudo guardar
+        if (user != null && mood != null) {
+            MoodEntry entry = new MoodEntry();
+            entry.setUser(user);
+            entry.setMood(mood);
+            entry.setInputText(inputText);
+            entry.setDetectedBy(detectedBy);
+            moodEntryRepository.save(entry);
         }
-
-        // Crear entrada
-        MoodEntry entry = new MoodEntry();
-        entry.setUser(user);
-        entry.setMood(mood);
-        entry.setInputText(inputText);
-        entry.setDetectedBy(detectedBy); // "text" o "button"
-
-        return moodEntryRepository.save(entry);
     }
 }

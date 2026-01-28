@@ -7,6 +7,6 @@ import java.util.Optional;
 
 @Repository
 public interface TrackRepository extends JpaRepository<Track, Integer> {
-    Optional<Track> findBySpotifyId(String spotifyId);
-    boolean existsBySpotifyId(String spotifyId);
+    Optional<Track> findByYoutubeId(String youtubeId);
+    boolean existsByYoutubeId(String youtubeId);
 }

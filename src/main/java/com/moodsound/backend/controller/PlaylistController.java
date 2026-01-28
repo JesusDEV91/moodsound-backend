@@ -7,9 +7,9 @@ import com.moodsound.backend.response.ErrorResponse;
 import com.moodsound.backend.response.MessageResponse;
 import com.moodsound.backend.response.PlaylistResponse;
 import com.moodsound.backend.service.MoodService;
-import com.moodsound.backend.service.SpotifyService;
+import com.moodsound.backend.service.YouTubeService;
 import com.moodsound.backend.service.TrackService;
-import com.moodsound.backend.spotify.SpotifyTrack;
+import com.moodsound.backend.youtube.YouTubeVideo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,14 +26,18 @@ public class PlaylistController {
 
     @Autowired
     private MoodService moodService;
+
     @Autowired
-    private SpotifyService spotifyService;
+    private YouTubeService youtubeService;
 
-
+    /**
+     * GET /api/playlist/{moodName}
+     * Obtiene la playlist de canciones para un mood específico
+     */
     @GetMapping("/{moodName}")
     public ResponseEntity<?> getPlaylist(@PathVariable String moodName) {
 
-
+        // Buscar mood en BD
         Mood mood = moodService.getMoodByName(moodName);
 
         if (mood == null) {
@@ -70,16 +74,19 @@ public class PlaylistController {
         }
 
         int count = trackService.countTracksByMood(mood.getId());
-
         CountResponse response = new CountResponse(moodName, count);
 
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * POST /api/playlist/{moodName}/refresh
+     * Actualiza la playlist llamando a YouTube API
+     */
     @PostMapping("/{moodName}/refresh")
     public ResponseEntity<?> refreshPlaylist(@PathVariable String moodName) {
 
-        // Buscar el mood
+        // Buscar mood en BD
         Mood mood = moodService.getMoodByName(moodName);
 
         if (mood == null) {
@@ -90,34 +97,33 @@ public class PlaylistController {
         // Eliminar canciones antiguas del mood
         trackService.removeAllTracksFromMood(mood.getId());
 
-        // Buscar canciones en Spotify
-        List<SpotifyTrack> spotifyTracks = spotifyService.searchByMood(moodName, 15);
+        // Buscar nuevas canciones en YouTube
+        List<YouTubeVideo> youtubeVideos = youtubeService.searchByMood(moodName, 15);
 
-        // Guardar cada canción en la BD
         int position = 1;
-        for (SpotifyTrack spotifyTrack : spotifyTracks) {
-            // Crear entidad Track
-            Track track = new Track();
-            track.setSpotifyId(spotifyTrack.getId());
-            track.setTitle(spotifyTrack.getName());
-            track.setArtist(spotifyTrack.getFirstArtistName());
-            track.setAlbum(spotifyTrack.getAlbum().getName());
-            track.setPreviewUrl(spotifyTrack.getPreviewUrl());
-            track.setExternalUrl(spotifyTrack.getSpotifyUrl());
-            track.setImageUrl(spotifyTrack.getAlbumImageUrl());
-            track.setDurationMs(spotifyTrack.getDurationMs());
-            track.setPopularity(spotifyTrack.getPopularity());
+        for (YouTubeVideo video : youtubeVideos) {
 
-            // Guardar track (si no existe)
+            // Crear entidad Track desde YouTubeVideo
+            Track track = new Track();
+            track.setYoutubeId(video.getVideoId());
+            track.setTitle(video.getTitle());
+            track.setArtist(video.getChannelTitle());
+            track.setAlbum(null);  // YouTube no tiene álbum
+            track.setThumbnailUrl(video.getThumbnailUrl());
+            track.setExternalUrl("https://music.youtube.com/watch?v=" + video.getVideoId());
+            track.setDurationMs(null);  // Opcional: YouTube no devuelve duración en search
+            track.setPopularity(null);  // Opcional: YouTube no tiene popularity
+
+            // Guardar track en BD
             Track savedTrack = trackService.saveTrack(track);
 
-            // Asociar al mood
+            // Asociar track con mood
             trackService.addTrackToMood(mood.getId(), savedTrack.getId(), position);
             position++;
         }
 
         MessageResponse response = new MessageResponse(
-                "Playlist actualizada con " + spotifyTracks.size() + " canciones de Spotify"
+                "Playlist actualizada con " + youtubeVideos.size() + " canciones de YouTube Music"
         );
 
         return ResponseEntity.ok(response);

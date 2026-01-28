@@ -8,6 +8,8 @@ import com.moodsound.backend.repository.MoodTrackRepository;
 import com.moodsound.backend.repository.TrackRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;  // ✅ AGREGAR ESTE IMPORT
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,12 +25,9 @@ public class TrackService {
     @Autowired
     private MoodRepository moodRepository;
 
-
     public List<Track> getTracksByMood(Integer moodId) {
-        // Obtener las relaciones mood_tracks
         List<MoodTrack> moodTracks = moodTrackRepository.findByMoodIdOrderByOrderPosition(moodId);
 
-        // Extraer solo las canciones
         List<Track> tracks = new ArrayList<>();
         for (MoodTrack moodTrack : moodTracks) {
             tracks.add(moodTrack.getTrack());
@@ -37,37 +36,31 @@ public class TrackService {
         return tracks;
     }
 
-
     public List<Track> getTracksByMoodName(String moodName) {
         Mood mood = moodRepository.findByName(moodName).orElse(null);
 
         if (mood == null) {
-            return new ArrayList<>(); // Lista vacía si no existe el mood
+            return new ArrayList<>();
         }
 
         return getTracksByMood(mood.getId());
     }
 
-
     public Track saveTrack(Track track) {
-        // Verificar si ya existe por spotify_id
-        Track existing = trackRepository.findBySpotifyId(track.getSpotifyId()).orElse(null);
+        Track existing = trackRepository.findByYoutubeId(track.getYoutubeId()).orElse(null);
 
         if (existing != null) {
-            return existing; // Ya existe, devolver la existente
+            return existing;
         }
 
-        return trackRepository.save(track); // Guardar nueva
+        return trackRepository.save(track);
     }
 
-
     public void addTrackToMood(Integer moodId, Integer trackId, Integer position) {
-        // Verificar que no exista ya
         if (moodTrackRepository.existsByMoodIdAndTrackId(moodId, trackId)) {
-            return; // Ya existe, no hacer nada
+            return;
         }
 
-        // Buscar mood y track
         Mood mood = moodRepository.findById(moodId).orElse(null);
         Track track = trackRepository.findById(trackId).orElse(null);
 
@@ -80,11 +73,10 @@ public class TrackService {
         }
     }
 
-
+    @Transactional  // ✅ AGREGAR ESTA ANOTACIÓN
     public void removeAllTracksFromMood(Integer moodId) {
         moodTrackRepository.deleteByMoodId(moodId);
     }
-
 
     public int countTracksByMood(Integer moodId) {
         List<MoodTrack> moodTracks = moodTrackRepository.findByMoodIdOrderByOrderPosition(moodId);

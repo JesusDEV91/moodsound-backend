@@ -20,8 +20,8 @@ public class Track {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "spotify_id", unique = true, nullable = false)
-    private String spotifyId;
+    @Column(name = "youtube_id", unique = true, nullable = false)
+    private String youtubeId;
 
     @Column(nullable = false)
     private String title;
@@ -31,14 +31,11 @@ public class Track {
 
     private String album;
 
-    @Column(name = "preview_url", columnDefinition = "TEXT")
-    private String previewUrl;
+    @Column(name = "thumbnail_url", columnDefinition = "TEXT")
+    private String thumbnailUrl;
 
     @Column(name = "external_url", nullable = false, columnDefinition = "TEXT")
     private String externalUrl;
-
-    @Column(name = "image_url", columnDefinition = "TEXT")
-    private String imageUrl;
 
     @Column(name = "duration_ms")
     private Integer durationMs;
@@ -48,7 +45,6 @@ public class Track {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    // Relaciones - IGNORAR en JSON
     @JsonIgnore
     @OneToMany(mappedBy = "track", cascade = CascadeType.ALL)
     private List<MoodTrack> moodTracks = new ArrayList<>();
@@ -62,6 +58,7 @@ public class Track {
         createdAt = LocalDateTime.now();
     }
 
+    // Getters y Setters
     public Integer getId() {
         return id;
     }
@@ -70,12 +67,12 @@ public class Track {
         this.id = id;
     }
 
-    public String getSpotifyId() {
-        return spotifyId;
+    public String getYoutubeId() {
+        return youtubeId;
     }
 
-    public void setSpotifyId(String spotifyId) {
-        this.spotifyId = spotifyId;
+    public void setYoutubeId(String youtubeId) {
+        this.youtubeId = youtubeId;
     }
 
     public String getTitle() {
@@ -102,12 +99,12 @@ public class Track {
         this.album = album;
     }
 
-    public String getPreviewUrl() {
-        return previewUrl;
+    public String getThumbnailUrl() {
+        return thumbnailUrl;
     }
 
-    public void setPreviewUrl(String previewUrl) {
-        this.previewUrl = previewUrl;
+    public void setThumbnailUrl(String thumbnailUrl) {
+        this.thumbnailUrl = thumbnailUrl;
     }
 
     public String getExternalUrl() {
@@ -116,14 +113,6 @@ public class Track {
 
     public void setExternalUrl(String externalUrl) {
         this.externalUrl = externalUrl;
-    }
-
-    public String getImageUrl() {
-        return imageUrl;
-    }
-
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
     }
 
     public Integer getDurationMs() {
