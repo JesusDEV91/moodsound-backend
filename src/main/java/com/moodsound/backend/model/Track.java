@@ -49,16 +49,12 @@ public class Track {
     @OneToMany(mappedBy = "track", cascade = CascadeType.ALL)
     private List<MoodTrack> moodTracks = new ArrayList<>();
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "track", cascade = CascadeType.ALL)
-    private List<FavoriteTrack> favoriteTracks = new ArrayList<>();
-
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
     }
 
-    // Getters y Setters
+
     public Integer getId() {
         return id;
     }
@@ -147,11 +143,5 @@ public class Track {
         this.moodTracks = moodTracks;
     }
 
-    public List<FavoriteTrack> getFavoriteTracks() {
-        return favoriteTracks;
-    }
 
-    public void setFavoriteTracks(List<FavoriteTrack> favoriteTracks) {
-        this.favoriteTracks = favoriteTracks;
-    }
 }

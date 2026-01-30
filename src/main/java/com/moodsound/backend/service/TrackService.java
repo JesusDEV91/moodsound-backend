@@ -73,7 +73,7 @@ public class TrackService {
         }
     }
 
-    @Transactional  // ✅ AGREGAR ESTA ANOTACIÓN
+    @Transactional
     public void removeAllTracksFromMood(Integer moodId) {
         moodTrackRepository.deleteByMoodId(moodId);
     }

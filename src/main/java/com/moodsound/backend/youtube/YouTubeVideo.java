@@ -3,9 +3,7 @@ package com.moodsound.backend.youtube;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-/**
- * Clase que representa un video de YouTube obtenido de la API
- */
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class YouTubeVideo {
 
@@ -15,7 +13,7 @@ public class YouTubeVideo {
     public YouTubeVideo() {
     }
 
-    // Métodos helper para acceso fácil
+
     public String getVideoId() {
         return id != null ? id.getVideoId() : null;
     }
@@ -36,7 +34,7 @@ public class YouTubeVideo {
         return null;
     }
 
-    // Getters y Setters principales
+
     public VideoId getId() {
         return id;
     }
@@ -53,7 +51,7 @@ public class YouTubeVideo {
         this.snippet = snippet;
     }
 
-    // Clases internas
+
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class VideoId {
         @JsonProperty("videoId")

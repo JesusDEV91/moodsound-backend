@@ -1,6 +1,7 @@
 package com.moodsound.backend.response;
 
 public class MoodAnalysisResponse {
+
     private boolean detected;
     private String mood;
     private Integer moodId;

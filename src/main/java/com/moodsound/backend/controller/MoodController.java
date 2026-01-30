@@ -20,17 +20,12 @@ public class MoodController {
     @Autowired
     private MoodService moodService;
 
-    /**
-     * POST /api/mood/analyze
-     * Analiza un texto o recibe un mood seleccionado
-     */
     @PostMapping("/analyze")
     public ResponseEntity<?> analyzeMood(@RequestBody AnalyzeRequest request) {
 
         String text = request.getText();
         String moodOption = request.getMoodOption();
 
-        // Si el usuario seleccionó un botón directamente
         if (moodOption != null && !moodOption.isEmpty()) {
             Mood mood = moodService.getMoodByName(moodOption);
 
@@ -39,7 +34,6 @@ public class MoodController {
                 return ResponseEntity.badRequest().body(error);
             }
 
-            // Crear respuesta
             MoodAnalysisResponse response = new MoodAnalysisResponse();
             response.setDetected(true);
             response.setMood(mood.getName());
@@ -50,7 +44,7 @@ public class MoodController {
             return ResponseEntity.ok(response);
         }
 
-        // Si escribió texto libre, analizar
+
         if (text != null && !text.isEmpty()) {
             Map<String, Object> result = moodService.analyzeMood(text);
 
@@ -71,7 +65,7 @@ public class MoodController {
             return ResponseEntity.ok(response);
         }
 
-        // No envió ni texto ni opción
+
         MoodAnalysisResponse response = new MoodAnalysisResponse();
         response.setDetected(false);
         response.setMessage("Debes enviar 'text' o 'moodOption'");
@@ -79,10 +73,6 @@ public class MoodController {
         return ResponseEntity.badRequest().body(response);
     }
 
-    /**
-     * GET /api/mood/all
-     * Obtiene todos los moods disponibles
-     */
     @GetMapping("/all")
     public ResponseEntity<List<Mood>> getAllMoods() {
         List<Mood> moods = moodService.getAllMoods();

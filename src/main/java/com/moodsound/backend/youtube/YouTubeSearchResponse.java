@@ -3,9 +3,7 @@ package com.moodsound.backend.youtube;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.List;
 
-/**
- * Clase que representa la respuesta completa de búsqueda de YouTube
- */
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class YouTubeSearchResponse {
 

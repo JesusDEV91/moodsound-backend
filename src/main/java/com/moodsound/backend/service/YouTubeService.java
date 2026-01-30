@@ -9,6 +9,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 @Service
 public class YouTubeService {
@@ -20,23 +21,24 @@ public class YouTubeService {
     private String apiUrl;
 
     private final RestTemplate restTemplate = new RestTemplate();
+    private final Random random = new Random();
 
-    /**
-     * Busca videos musicales en YouTube
-     */
+
     public List<YouTubeVideo> searchVideos(String query, int maxResults) {
 
-        // Construir URL de búsqueda
+        String[] orders = {"relevance", "date", "viewCount", "rating"};
+        String order = orders[random.nextInt(orders.length)];
+
         String searchUrl = apiUrl + "/search" +
                 "?part=snippet" +
                 "&type=video" +
-                "&videoCategoryId=10" +  // Categoría Música
+                "&videoCategoryId=10" +
+                "&order=" + order +
                 "&q=" + query +
                 "&maxResults=" + maxResults +
                 "&key=" + apiKey;
 
         try {
-            // Llamar a YouTube Data API
             ResponseEntity<YouTubeSearchResponse> response = restTemplate.getForEntity(
                     searchUrl,
                     YouTubeSearchResponse.class
@@ -54,29 +56,65 @@ public class YouTubeService {
         return new ArrayList<>();
     }
 
-    /**
-     * Busca música por mood específico
-     */
+
     public List<YouTubeVideo> searchByMood(String moodName, int maxResults) {
-        String query = "";
+        String query = getRandomQueryForMood(moodName);
+        return searchVideos(query, maxResults);
+    }
+
+    private String getRandomQueryForMood(String moodName) {
+        String[] queries;
 
         switch (moodName.toLowerCase()) {
             case "happy":
-                query = "happy upbeat music";
+                queries = new String[]{
+                        "musica alegre",
+                        "canciones felices",
+                        "musica positiva",
+                        "canciones animadas",
+                        "musica de buen humor",
+                        "musica para bailar feliz"
+                };
                 break;
+
             case "sad":
-                query = "sad emotional music";
+                queries = new String[]{
+                        "musica triste",
+                        "canciones melancolicas",
+                        "musica romantica triste",
+                        "baladas emotivas",
+                        "musica para llorar",
+                        "canciones de desamor"
+                };
                 break;
+
             case "energetic":
-                query = "energetic workout music";
+                queries = new String[]{
+                        "musica energetica",
+                        "musica para entrenar",
+                        "canciones motivadoras",
+                        "musica de gimnasio",
+                        "musica para correr",
+                        "musica intensa"
+                };
                 break;
+
             case "chill":
-                query = "chill relaxing music";
+                queries = new String[]{
+                        "musica relajante",
+                        "musica tranquila",
+                        "lofi en español",
+                        "musica ambiente",
+                        "musica para estudiar",
+                        "musica chill"
+                };
                 break;
+
             default:
-                query = moodName + " music";
+                return moodName + " music";
         }
 
-        return searchVideos(query, maxResults);
+        int index = random.nextInt(queries.length);
+        return queries[index];
     }
 }

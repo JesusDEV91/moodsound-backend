@@ -25,28 +25,19 @@ public class Mood {
     @Column(length = 7)
     private String color;
 
-    // Relaciones - IGNORAR en JSON
+
     @JsonIgnore
     @OneToMany(mappedBy = "mood", cascade = CascadeType.ALL)
     private List<MoodTrack> moodTracks = new ArrayList<>();
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "mood", cascade = CascadeType.ALL)
-    private List<MoodEntry> moodEntries = new ArrayList<>();
-
-    // CONSTRUCTORES
     public Mood() {
     }
-
-    // GETTERS Y SETTERS
     public Integer getId() {
         return id;
     }
-
     public void setId(Integer id) {
         this.id = id;
     }
-
     public String getName() {
         return name;
     }
@@ -87,11 +78,5 @@ public class Mood {
         this.moodTracks = moodTracks;
     }
 
-    public List<MoodEntry> getMoodEntries() {
-        return moodEntries;
-    }
 
-    public void setMoodEntries(List<MoodEntry> moodEntries) {
-        this.moodEntries = moodEntries;
-    }
 }
