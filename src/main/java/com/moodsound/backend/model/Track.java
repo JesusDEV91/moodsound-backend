@@ -42,6 +42,10 @@ public class Track {
 
     private Integer popularity;
 
+    @Column(name = "audience_type", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private AudienceType audienceType = AudienceType.ADULT;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -52,96 +56,46 @@ public class Track {
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
+        if (this.audienceType == null) {
+            this.audienceType = AudienceType.ADULT;
+        }
     }
 
 
-    public Integer getId() {
-        return id;
-    }
 
-    public void setId(Integer id) {
-        this.id = id;
-    }
+    public Integer getId() { return id; }
+    public void setId(Integer id) { this.id = id; }
 
-    public String getYoutubeId() {
-        return youtubeId;
-    }
+    public String getYoutubeId() { return youtubeId; }
+    public void setYoutubeId(String youtubeId) { this.youtubeId = youtubeId; }
 
-    public void setYoutubeId(String youtubeId) {
-        this.youtubeId = youtubeId;
-    }
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
 
-    public String getTitle() {
-        return title;
-    }
+    public String getArtist() { return artist; }
+    public void setArtist(String artist) { this.artist = artist; }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
+    public String getAlbum() { return album; }
+    public void setAlbum(String album) { this.album = album; }
 
-    public String getArtist() {
-        return artist;
-    }
+    public String getThumbnailUrl() { return thumbnailUrl; }
+    public void setThumbnailUrl(String thumbnailUrl) { this.thumbnailUrl = thumbnailUrl; }
 
-    public void setArtist(String artist) {
-        this.artist = artist;
-    }
+    public String getExternalUrl() { return externalUrl; }
+    public void setExternalUrl(String externalUrl) { this.externalUrl = externalUrl; }
 
-    public String getAlbum() {
-        return album;
-    }
+    public Integer getDurationMs() { return durationMs; }
+    public void setDurationMs(Integer durationMs) { this.durationMs = durationMs; }
 
-    public void setAlbum(String album) {
-        this.album = album;
-    }
+    public Integer getPopularity() { return popularity; }
+    public void setPopularity(Integer popularity) { this.popularity = popularity; }
 
-    public String getThumbnailUrl() {
-        return thumbnailUrl;
-    }
+    public AudienceType getAudienceType() { return audienceType; }
+    public void setAudienceType(AudienceType audienceType) { this.audienceType = audienceType; }
 
-    public void setThumbnailUrl(String thumbnailUrl) {
-        this.thumbnailUrl = thumbnailUrl;
-    }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
-    public String getExternalUrl() {
-        return externalUrl;
-    }
-
-    public void setExternalUrl(String externalUrl) {
-        this.externalUrl = externalUrl;
-    }
-
-    public Integer getDurationMs() {
-        return durationMs;
-    }
-
-    public void setDurationMs(Integer durationMs) {
-        this.durationMs = durationMs;
-    }
-
-    public Integer getPopularity() {
-        return popularity;
-    }
-
-    public void setPopularity(Integer popularity) {
-        this.popularity = popularity;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public List<MoodTrack> getMoodTracks() {
-        return moodTracks;
-    }
-
-    public void setMoodTracks(List<MoodTrack> moodTracks) {
-        this.moodTracks = moodTracks;
-    }
-
-
+    public List<MoodTrack> getMoodTracks() { return moodTracks; }
+    public void setMoodTracks(List<MoodTrack> moodTracks) { this.moodTracks = moodTracks; }
 }

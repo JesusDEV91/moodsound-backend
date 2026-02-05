@@ -1,5 +1,6 @@
 package com.moodsound.backend.service;
 
+import com.moodsound.backend.model.AudienceType;
 import com.moodsound.backend.model.Mood;
 import com.moodsound.backend.model.MoodTrack;
 import com.moodsound.backend.model.Track;
@@ -8,10 +9,11 @@ import com.moodsound.backend.repository.MoodTrackRepository;
 import com.moodsound.backend.repository.TrackRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;  // ✅ AGREGAR ESTE IMPORT
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class TrackService {
@@ -25,35 +27,30 @@ public class TrackService {
     @Autowired
     private MoodRepository moodRepository;
 
+    public List<Track> getTracksByMoodAndAudience(String moodName, AudienceType audience) {
+        // Llamamos al método que creamos en el TrackRepository
+        return trackRepository.findByMoodAndAudience(moodName, audience);
+    }
+
     public List<Track> getTracksByMood(Integer moodId) {
         List<MoodTrack> moodTracks = moodTrackRepository.findByMoodIdOrderByOrderPosition(moodId);
 
-        List<Track> tracks = new ArrayList<>();
-        for (MoodTrack moodTrack : moodTracks) {
-            tracks.add(moodTrack.getTrack());
-        }
 
-        return tracks;
+        return moodTracks.stream()
+                .map(MoodTrack::getTrack)
+                .collect(Collectors.toList());
     }
 
     public List<Track> getTracksByMoodName(String moodName) {
-        Mood mood = moodRepository.findByName(moodName).orElse(null);
-
-        if (mood == null) {
-            return new ArrayList<>();
-        }
-
-        return getTracksByMood(mood.getId());
+        return moodRepository.findByName(moodName)
+                .map(mood -> getTracksByMood(mood.getId()))
+                .orElse(new ArrayList<>());
     }
 
     public Track saveTrack(Track track) {
-        Track existing = trackRepository.findByYoutubeId(track.getYoutubeId()).orElse(null);
 
-        if (existing != null) {
-            return existing;
-        }
-
-        return trackRepository.save(track);
+        return trackRepository.findByYoutubeId(track.getYoutubeId())
+                .orElseGet(() -> trackRepository.save(track));
     }
 
     public void addTrackToMood(Integer moodId, Integer trackId, Integer position) {
@@ -79,7 +76,6 @@ public class TrackService {
     }
 
     public int countTracksByMood(Integer moodId) {
-        List<MoodTrack> moodTracks = moodTrackRepository.findByMoodIdOrderByOrderPosition(moodId);
-        return moodTracks.size();
+        return moodTrackRepository.findByMoodIdOrderByOrderPosition(moodId).size();
     }
 }
