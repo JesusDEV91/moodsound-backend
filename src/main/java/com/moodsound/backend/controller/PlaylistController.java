@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,7 +47,36 @@ public class PlaylistController {
             List<Track> tracks = trackService.getTracksByMoodAndAudience(moodName, audienceEnum);
 
             if (tracks.isEmpty()) {
-                tracks = cargarCancionesDesdeYouTube(mood, moodName, audienceEnum);
+                String queryBusqueda;
+                if (audienceEnum == AudienceType.KIDS) {
+                    queryBusqueda = moodName + " canciones infantiles";
+                } else {
+                    queryBusqueda = moodName + " music";
+                }
+
+                try {
+                    List<YouTubeVideo> youtubeVideos = youtubeService.searchByCustomQuery(queryBusqueda, 15);
+
+                    int position = 1;
+                    for (YouTubeVideo video : youtubeVideos) {
+                        Track track = new Track();
+                        track.setYoutubeId(video.getVideoId());
+                        track.setTitle(video.getTitle());
+                        track.setArtist(video.getChannelTitle());
+                        track.setThumbnailUrl(video.getThumbnailUrl());
+                        track.setExternalUrl("https://www.youtube.com/watch?v=" + video.getVideoId());
+                        track.setAudienceType(audienceEnum);
+
+                        Track savedTrack = trackService.saveTrack(track);
+                        trackService.addTrackToMood(mood.getId(), savedTrack.getId(), position);
+                        position++;
+                    }
+
+                    tracks = trackService.getTracksByMoodAndAudience(moodName, audienceEnum);
+
+                } catch (Exception e) {
+                    System.err.println("⚠️ YouTube API no disponible: " + e.getMessage());
+                }
             }
 
             PlaylistResponse response = new PlaylistResponse();
@@ -79,35 +107,29 @@ public class PlaylistController {
                 return ResponseEntity.badRequest().body(new ErrorResponse("Mood no encontrado: " + moodName));
             }
 
-            trackService.removeAllTracksFromMood(mood.getId());
-            List<Track> tracks = cargarCancionesDesdeYouTube(mood, moodName, audienceEnum);
+            String queryBusqueda;
+            if (audienceEnum == AudienceType.KIDS) {
+                queryBusqueda = moodName + " canciones infantiles";
+            } else {
+                queryBusqueda = moodName + " music";
+            }
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("message", "Playlist actualizada con " + tracks.size() + " canciones");
-            response.put("count", tracks.size());
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).body(new ErrorResponse("Error al refrescar: " + e.getMessage()));
-        }
-    }
-
-    private List<Track> cargarCancionesDesdeYouTube(Mood mood, String moodName, AudienceType audience) {
-        String queryBusqueda;
-
-        if (audience == AudienceType.KIDS) {
-            queryBusqueda = moodName + " canciones infantiles";
-        } else {
-            queryBusqueda = moodName + " music";
-        }
-
-        try {
-            List<YouTubeVideo> youtubeVideos = youtubeService.searchByCustomQuery(queryBusqueda, 15);
+            List<YouTubeVideo> youtubeVideos;
+            try {
+                youtubeVideos = youtubeService.searchByCustomQuery(queryBusqueda, 15);
+            } catch (Exception e) {
+                return ResponseEntity.status(503).body(
+                        new ErrorResponse("YouTube API no disponible. Se mantienen las canciones actuales.")
+                );
+            }
 
             if (youtubeVideos.isEmpty()) {
-                return new ArrayList<>();
+                return ResponseEntity.status(503).body(
+                        new ErrorResponse("No se encontraron canciones en YouTube. Se mantienen las actuales.")
+                );
             }
+
+            trackService.removeAllTracksFromMood(mood.getId());
 
             int position = 1;
             for (YouTubeVideo video : youtubeVideos) {
@@ -117,18 +139,21 @@ public class PlaylistController {
                 track.setArtist(video.getChannelTitle());
                 track.setThumbnailUrl(video.getThumbnailUrl());
                 track.setExternalUrl("https://www.youtube.com/watch?v=" + video.getVideoId());
-                track.setAudienceType(audience);
+                track.setAudienceType(audienceEnum);
 
                 Track savedTrack = trackService.saveTrack(track);
                 trackService.addTrackToMood(mood.getId(), savedTrack.getId(), position);
                 position++;
             }
 
-            return trackService.getTracksByMoodAndAudience(moodName, audience);
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Playlist actualizada con " + youtubeVideos.size() + " canciones");
+            response.put("count", youtubeVideos.size());
+            return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            System.err.println("⚠️ YouTube API no disponible: " + e.getMessage());
-            return new ArrayList<>();  // ← Devuelve lista vacía en vez de crashear
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(new ErrorResponse("Error al refrescar: " + e.getMessage()));
         }
     }
 }
