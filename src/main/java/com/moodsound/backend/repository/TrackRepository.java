@@ -15,6 +15,12 @@ public interface TrackRepository extends JpaRepository<Track, Integer> {
     Optional<Track> findByYoutubeId(String youtubeId);
     boolean existsByYoutubeId(String youtubeId);
 
-    @Query("SELECT t FROM Track t JOIN t.moodTracks mt WHERE mt.mood.name = :moodName AND t.audienceType = :audience")
-    List<Track> findByMoodAndAudience(@Param("moodName") String moodName, @Param("audience") AudienceType audience);
+    @Query("SELECT t FROM Track t " +
+            "JOIN t.moodTracks mt " +
+            "JOIN mt.mood m " +
+            "WHERE m.name = :moodName " +
+            "AND t.audienceType = :audience " +
+            "ORDER BY mt.orderPosition ASC")
+    List<Track> findByMoodAndAudience(@Param("moodName") String moodName,
+                                      @Param("audience") AudienceType audience);
 }

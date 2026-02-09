@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,16 +38,13 @@ public class PlaylistController {
             @RequestParam(defaultValue = "ADULT") String audience) {
 
         try {
-
             AudienceType audienceEnum = AudienceType.valueOf(audience.toUpperCase());
-
             Mood mood = moodService.getMoodByName(moodName);
 
             if (mood == null) {
                 return ResponseEntity.badRequest().body(new ErrorResponse("Mood no encontrado: " + moodName));
             }
 
-            // Buscamos canciones filtrando por mood y audiencia
             List<Track> tracks = trackService.getTracksByMoodAndAudience(moodName, audienceEnum);
 
             if (tracks.isEmpty()) {
@@ -63,7 +61,7 @@ public class PlaylistController {
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            e.printStackTrace(); // Esto hará que veas el error real en la consola de IntelliJ
+            e.printStackTrace();
             return ResponseEntity.status(500).body(new ErrorResponse("Error interno del servidor: " + e.getMessage()));
         }
     }
@@ -86,51 +84,51 @@ public class PlaylistController {
 
             Map<String, Object> response = new HashMap<>();
             response.put("message", "Playlist actualizada con " + tracks.size() + " canciones");
+            response.put("count", tracks.size());
             return ResponseEntity.ok(response);
+
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(500).body(new ErrorResponse("Error al refrescar: " + e.getMessage()));
         }
     }
 
     private List<Track> cargarCancionesDesdeYouTube(Mood mood, String moodName, AudienceType audience) {
-
         String queryBusqueda;
+
         if (audience == AudienceType.KIDS) {
-
-            queryBusqueda = moodName + " canciones infantiles para niños kids nursery rhymes";
+            queryBusqueda = moodName + " canciones infantiles";
         } else {
-
-            queryBusqueda = moodName + " official music song -kids -children -nursery -infantil";
+            queryBusqueda = moodName + " music";
         }
 
+        try {
+            List<YouTubeVideo> youtubeVideos = youtubeService.searchByCustomQuery(queryBusqueda, 15);
 
-        List<YouTubeVideo> youtubeVideos = youtubeService.searchByMood(queryBusqueda, 15);
-
-        int position = 1;
-        for (YouTubeVideo video : youtubeVideos) {
-
-            Track track = new Track();
-            track.setYoutubeId(video.getVideoId());
-            track.setTitle(video.getTitle());
-            track.setArtist(video.getChannelTitle());
-            track.setThumbnailUrl(video.getThumbnailUrl());
-            track.setExternalUrl("https://www.youtube.com/watch?v=" + video.getVideoId());
-
-
-            track.setAudienceType(audience);
-
-
-            Track savedTrack = trackService.saveTrack(track);
-            if (savedTrack.getAudienceType() != audience) {
-                savedTrack.setAudienceType(audience);
-                trackService.saveTrack(savedTrack);
+            if (youtubeVideos.isEmpty()) {
+                return new ArrayList<>();
             }
 
+            int position = 1;
+            for (YouTubeVideo video : youtubeVideos) {
+                Track track = new Track();
+                track.setYoutubeId(video.getVideoId());
+                track.setTitle(video.getTitle());
+                track.setArtist(video.getChannelTitle());
+                track.setThumbnailUrl(video.getThumbnailUrl());
+                track.setExternalUrl("https://www.youtube.com/watch?v=" + video.getVideoId());
+                track.setAudienceType(audience);
 
-            trackService.addTrackToMood(mood.getId(), savedTrack.getId(), position);
-            position++;
+                Track savedTrack = trackService.saveTrack(track);
+                trackService.addTrackToMood(mood.getId(), savedTrack.getId(), position);
+                position++;
+            }
+
+            return trackService.getTracksByMoodAndAudience(moodName, audience);
+
+        } catch (Exception e) {
+            System.err.println("⚠️ YouTube API no disponible: " + e.getMessage());
+            return new ArrayList<>();  // ← Devuelve lista vacía en vez de crashear
         }
-        
-        return trackService.getTracksByMoodAndAudience(moodName, audience);
     }
 }

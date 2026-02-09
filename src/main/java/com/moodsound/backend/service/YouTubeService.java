@@ -23,10 +23,8 @@ public class YouTubeService {
     private final RestTemplate restTemplate = new RestTemplate();
     private final Random random = new Random();
 
-
     public List<YouTubeVideo> searchVideos(String query, int maxResults) {
-
-        String[] orders = {"relevance", "date", "viewCount", "rating"};
+        String[] orders = {"relevance", "date", "viewCount"};
         String order = orders[random.nextInt(orders.length)];
 
         String searchUrl = apiUrl + "/search" +
@@ -56,10 +54,16 @@ public class YouTubeService {
         return new ArrayList<>();
     }
 
-
     public List<YouTubeVideo> searchByMood(String moodName, int maxResults) {
         String query = getRandomQueryForMood(moodName);
+        System.out.println("Buscando en YouTube: " + query);
         return searchVideos(query, maxResults);
+    }
+
+    // ✅ NUEVO MÉTODO
+    public List<YouTubeVideo> searchByCustomQuery(String customQuery, int maxResults) {
+        System.out.println("Buscando en YouTube (query personalizada): " + customQuery);
+        return searchVideos(customQuery, maxResults);
     }
 
     private String getRandomQueryForMood(String moodName) {
@@ -111,10 +115,9 @@ public class YouTubeService {
                 break;
 
             default:
-                return moodName + " music";
+                return moodName + " musica";
         }
 
-        int index = random.nextInt(queries.length);
-        return queries[index];
+        return queries[random.nextInt(queries.length)];
     }
 }
