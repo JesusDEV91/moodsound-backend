@@ -5,14 +5,18 @@ import com.moodsound.backend.model.Mood;
 import com.moodsound.backend.model.Track;
 import com.moodsound.backend.response.ErrorResponse;
 import com.moodsound.backend.response.PlaylistResponse;
+import com.moodsound.backend.response.TrackWithFavoriteResponse;
+import com.moodsound.backend.service.FavoriteService;
 import com.moodsound.backend.service.MoodService;
 import com.moodsound.backend.service.YouTubeService;
 import com.moodsound.backend.service.TrackService;
+import com.moodsound.backend.service.UserService;
 import com.moodsound.backend.youtube.YouTubeVideo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,10 +35,22 @@ public class PlaylistController {
     @Autowired
     private YouTubeService youtubeService;
 
+    @Autowired
+    private FavoriteService favoriteService;
+
+    @Autowired
+    private UserService userService;
+
+    /**
+     * Obtiene una playlist según el mood y audiencia
+     * Incluye información de favoritos si el usuario está autenticado
+     * GET /api/playlist/{moodName}?audience=ADULT
+     */
     @GetMapping("/{moodName}")
     public ResponseEntity<?> getPlaylist(
             @PathVariable String moodName,
-            @RequestParam(defaultValue = "ADULT") String audience) {
+            @RequestParam(defaultValue = "ADULT") String audience,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
 
         try {
             AudienceType audienceEnum = AudienceType.valueOf(audience.toUpperCase());
@@ -46,6 +62,7 @@ public class PlaylistController {
 
             List<Track> tracks = trackService.getTracksByMoodAndAudience(moodName, audienceEnum);
 
+            // Si no hay tracks, buscar en YouTube
             if (tracks.isEmpty()) {
                 String queryBusqueda;
                 if (audienceEnum == AudienceType.KIDS) {
@@ -79,12 +96,37 @@ public class PlaylistController {
                 }
             }
 
+            // Verificar si el usuario está autenticado
+            Integer userId = getUserIdFromAuth(authHeader);
+
+            // Si está autenticado, incluir información de favoritos
+            if (userId != null) {
+                List<TrackWithFavoriteResponse> tracksWithFavorite = new ArrayList<>();
+
+                for (Track track : tracks) {
+                    boolean isFavorite = favoriteService.isFavorite(userId, track.getId());
+                    tracksWithFavorite.add(new TrackWithFavoriteResponse(track, isFavorite));
+                }
+
+                PlaylistResponse response = new PlaylistResponse();
+                response.setMood(mood.getName());
+                response.setDisplayName(mood.getDisplayName());
+                response.setEmoji(mood.getEmoji());
+                response.setColor(mood.getColor());
+                response.setTracksWithFavorite(tracksWithFavorite);
+                response.setAuthenticated(true);
+
+                return ResponseEntity.ok(response);
+            }
+
+            // Usuario no autenticado - respuesta normal
             PlaylistResponse response = new PlaylistResponse();
             response.setMood(mood.getName());
             response.setDisplayName(mood.getDisplayName());
             response.setEmoji(mood.getEmoji());
             response.setColor(mood.getColor());
             response.setTracks(tracks);
+            response.setAuthenticated(false);
 
             return ResponseEntity.ok(response);
 
@@ -94,6 +136,10 @@ public class PlaylistController {
         }
     }
 
+    /**
+     * Refresca una playlist con nuevas canciones de YouTube
+     * POST /api/playlist/{moodName}/refresh?audience=ADULT
+     */
     @PostMapping("/{moodName}/refresh")
     public ResponseEntity<?> refreshPlaylist(
             @PathVariable String moodName,
@@ -154,6 +200,19 @@ public class PlaylistController {
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(500).body(new ErrorResponse("Error al refrescar: " + e.getMessage()));
+        }
+    }
+
+    private Integer getUserIdFromAuth(String authHeader) {
+        if (authHeader == null || authHeader.isEmpty()) {
+            return null;
+        }
+
+        try {
+            String token = authHeader.replace("Bearer ", "");
+            return userService.getUserIdFromToken(token);
+        } catch (Exception e) {
+            return null;
         }
     }
 }
