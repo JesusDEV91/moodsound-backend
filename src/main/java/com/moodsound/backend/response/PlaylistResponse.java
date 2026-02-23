@@ -14,7 +14,7 @@ public class PlaylistResponse {
 
     public PlaylistResponse() {}
 
-    // Getters y Setters
+
     public String getMood() { return mood; }
     public void setMood(String mood) { this.mood = mood; }
 

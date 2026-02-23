@@ -3,6 +3,7 @@ package com.moodsound.backend.service;
 import com.moodsound.backend.model.User;
 import com.moodsound.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.Base64;
@@ -15,7 +16,7 @@ public class UserService {
     private UserRepository userRepository;
 
     public User registerUser(String username, String email, String password, String fullName) {
-        // Verificar si el usuario ya existe
+
         if (userRepository.existsByUsername(username)) {
             throw new RuntimeException("El nombre de usuario ya está en uso");
         }
@@ -24,7 +25,7 @@ public class UserService {
             throw new RuntimeException("El email ya está registrado");
         }
 
-        // Crear nuevo usuario
+
         User user = new User();
         user.setUsername(username);
         user.setEmail(email);
@@ -40,10 +41,8 @@ public class UserService {
 
         if (userOpt.isPresent()) {
             User user = userOpt.get();
-            String encodedPassword = encodePassword(password);
 
-            if (user.getPassword().equals(encodedPassword) && user.getActive()) {
-                // Actualizar último login
+            if (BCrypt.checkpw(password, user.getPassword()) && user.getActive()) {
                 user.setLastLogin(LocalDateTime.now());
                 userRepository.save(user);
                 return Optional.of(user);
@@ -61,12 +60,12 @@ public class UserService {
         return userRepository.findByUsername(username);
     }
 
-    // Método simple de codificación (para producción usar BCrypt)
+
     private String encodePassword(String password) {
-        return Base64.getEncoder().encodeToString(password.getBytes());
+        return BCrypt.hashpw(password, BCrypt.gensalt());
     }
 
-    // Para verificar token simple (userId codificado)
+
     public String generateToken(User user) {
         String tokenData = user.getId() + ":" + user.getUsername() + ":" + System.currentTimeMillis();
         return Base64.getEncoder().encodeToString(tokenData.getBytes());

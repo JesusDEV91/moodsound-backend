@@ -2,9 +2,7 @@ package com.moodsound.backend.response;
 
 import com.moodsound.backend.model.Track;
 
-/**
- * Respuesta que incluye información de una canción y si está en favoritos
- */
+
 public class TrackWithFavoriteResponse {
     private Integer id;
     private String youtubeId;
@@ -32,7 +30,7 @@ public class TrackWithFavoriteResponse {
         this.isFavorite = isFavorite;
     }
 
-    // Getters y Setters
+
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
 

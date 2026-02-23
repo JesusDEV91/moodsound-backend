@@ -28,7 +28,7 @@ public class Favorite {
         addedAt = LocalDateTime.now();
     }
 
-    // Constructores
+
     public Favorite() {
     }
 
@@ -37,7 +37,7 @@ public class Favorite {
         this.track = track;
     }
 
-    // Getters y Setters
+
     public Integer getId() {
         return id;
     }

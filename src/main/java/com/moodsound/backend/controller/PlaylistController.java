@@ -41,11 +41,7 @@ public class PlaylistController {
     @Autowired
     private UserService userService;
 
-    /**
-     * Obtiene una playlist según el mood y audiencia
-     * Incluye información de favoritos si el usuario está autenticado
-     * GET /api/playlist/{moodName}?audience=ADULT
-     */
+
     @GetMapping("/{moodName}")
     public ResponseEntity<?> getPlaylist(
             @PathVariable String moodName,
@@ -136,10 +132,7 @@ public class PlaylistController {
         }
     }
 
-    /**
-     * Refresca una playlist con nuevas canciones de YouTube
-     * POST /api/playlist/{moodName}/refresh?audience=ADULT
-     */
+
     @PostMapping("/{moodName}/refresh")
     public ResponseEntity<?> refreshPlaylist(
             @PathVariable String moodName,

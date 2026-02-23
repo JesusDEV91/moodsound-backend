@@ -45,7 +45,7 @@ public class User {
         createdAt = LocalDateTime.now();
     }
 
-    // Constructores
+
     public User() {
     }
 
@@ -55,7 +55,7 @@ public class User {
         this.password = password;
     }
 
-    // Getters y Setters
+
     public Integer getId() {
         return id;
     }

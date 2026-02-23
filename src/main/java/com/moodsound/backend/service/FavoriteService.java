@@ -30,7 +30,7 @@ public class FavoriteService {
 
     @Transactional
     public Favorite addFavorite(Integer userId, Integer trackId) {
-        // Verificar si ya existe
+
         if (favoriteRepository.existsByUserIdAndTrackId(userId, trackId)) {
             throw new RuntimeException("Esta canción ya está en favoritos");
         }

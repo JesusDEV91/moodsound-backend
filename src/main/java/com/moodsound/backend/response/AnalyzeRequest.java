@@ -4,11 +4,11 @@ public class AnalyzeRequest {
     private String text;
     private String moodOption;
 
-    // Constructor vacío
+
     public AnalyzeRequest() {
     }
 
-    // Getters y Setters
+
     public String getText() {
         return text;
     }

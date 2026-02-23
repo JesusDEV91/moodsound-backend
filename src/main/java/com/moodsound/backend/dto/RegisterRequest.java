@@ -9,7 +9,7 @@ public class RegisterRequest {
     public RegisterRequest() {
     }
 
-    // Getters y Setters
+
     public String getUsername() {
         return username;
     }

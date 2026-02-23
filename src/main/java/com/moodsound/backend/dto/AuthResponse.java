@@ -14,7 +14,7 @@ public class AuthResponse {
     public AuthResponse() {
     }
 
-    // Constructor con createdAt
+
     public AuthResponse(Integer userId, String username, String email, String fullName, String token, LocalDateTime createdAt) {
         this.userId = userId;
         this.username = username;
@@ -24,7 +24,7 @@ public class AuthResponse {
         this.createdAt = createdAt;
     }
 
-    // Constructor sin createdAt (para compatibilidad)
+
     public AuthResponse(Integer userId, String username, String email, String fullName, String token) {
         this.userId = userId;
         this.username = username;
@@ -33,7 +33,7 @@ public class AuthResponse {
         this.token = token;
     }
 
-    // Getters y Setters
+
     public Integer getUserId() {
         return userId;
     }
