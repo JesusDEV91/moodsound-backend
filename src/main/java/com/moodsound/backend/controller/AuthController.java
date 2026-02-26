@@ -38,7 +38,7 @@ public class AuthController {
                     user.getEmail(),
                     user.getFullName(),
                     token,
-                    user.getCreatedAt() // ⬅️ AÑADIDO
+                    user.getCreatedAt() 
             );
 
             return ResponseEntity.ok(response);
@@ -62,7 +62,7 @@ public class AuthController {
                     user.getEmail(),
                     user.getFullName(),
                     token,
-                    user.getCreatedAt() // ⬅️ AÑADIDO
+                    user.getCreatedAt() 
             );
 
             return ResponseEntity.ok(response);
@@ -87,7 +87,7 @@ public class AuthController {
                             user.getEmail(),
                             user.getFullName(),
                             token,
-                            user.getCreatedAt() // ⬅️ AÑADIDO
+                            user.getCreatedAt() 
                     );
                     return ResponseEntity.ok(response);
                 }
@@ -116,7 +116,7 @@ public class AuthController {
                     response.setUsername(user.getUsername());
                     response.setEmail(user.getEmail());
                     response.setFullName(user.getFullName());
-                    response.setCreatedAt(user.getCreatedAt()); // ⬅️ AÑADIDO
+                    response.setCreatedAt(user.getCreatedAt()); 
 
                     return ResponseEntity.ok(response);
                 }
