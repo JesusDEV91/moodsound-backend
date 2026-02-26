@@ -58,7 +58,7 @@ public class PlaylistController {
 
             List<Track> tracks = trackService.getTracksByMoodAndAudience(moodName, audienceEnum);
 
-            // Si no hay tracks, buscar en YouTube
+            
             if (tracks.isEmpty()) {
                 String queryBusqueda;
                 if (audienceEnum == AudienceType.KIDS) {
@@ -92,10 +92,10 @@ public class PlaylistController {
                 }
             }
 
-            // Verificar si el usuario está autenticado
+    
             Integer userId = getUserIdFromAuth(authHeader);
 
-            // Si está autenticado, incluir información de favoritos
+         
             if (userId != null) {
                 List<TrackWithFavoriteResponse> tracksWithFavorite = new ArrayList<>();
 
@@ -115,7 +115,7 @@ public class PlaylistController {
                 return ResponseEntity.ok(response);
             }
 
-            // Usuario no autenticado - respuesta normal
+            
             PlaylistResponse response = new PlaylistResponse();
             response.setMood(mood.getName());
             response.setDisplayName(mood.getDisplayName());
